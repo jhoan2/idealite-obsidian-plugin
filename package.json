@@ -1,7 +1,7 @@
 {
-	"name": "obsidian-sample-plugin",
+	"name": "idealite-obsidian-plugin",
 	"version": "1.0.0",
-	"description": "This is a sample plugin for Obsidian (https://obsidian.md)",
+	"description": "This is an Obsidian plugin for Idealite.",
 	"main": "main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",
