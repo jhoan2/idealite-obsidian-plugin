@@ -3,9 +3,8 @@
 	"name": "Idealite Obsidian Plugin",
 	"version": "1.0.0",
 	"minAppVersion": "0.15.0",
-	"description": "An Obsidian plugin for Idealite.",
+	"description": "Transform your note-taking into progressive learning. Upload your markdown notes to Idealite where they're enhanced with AI-powered features like automatic tagging, flashcard generation, and intelligent organization.",
 	"author": "John Hoang",
 	"authorUrl": "https://idealite.xyz",
-	"fundingUrl": "https://idealite.xyz",
 	"isDesktopOnly": false
 }
