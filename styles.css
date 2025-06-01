@@ -6,3 +6,20 @@ available in the app when your plugin is enabled.
 If your plugin does not need CSS, delete this file.
 
 */
+
+.idealite-sync-busy svg {
+	color: var(--interactive-accent);
+}
+.idealite-sync-error svg {
+	color: var(--color-red);
+}
+.idealite-sync-status {
+	cursor: pointer;
+}
+
+.modal-action-buttons {
+	display: flex;
+	gap: 8px;
+	margin-top: 1rem;
+	justify-content: flex-end;
+}
