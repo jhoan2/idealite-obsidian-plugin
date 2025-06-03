@@ -28,7 +28,7 @@ async function sha256(text: string): Promise<string> {
 		.join("");
 }
 
-const API_ENDPOINT = "https://idealite.xyz/api/obsidian/note-upload";
+const API_ENDPOINT = "https://www.idealite.xyz/api/obsidian/note-upload";
 
 interface IdealiteUploadPluginSettings {
 	apiToken: string;
