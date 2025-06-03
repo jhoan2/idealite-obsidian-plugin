@@ -1,6 +1,6 @@
 {
 	"name": "idealite-obsidian-plugin",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"description": "This is an Obsidian plugin for Idealite.",
 	"main": "main.js",
 	"scripts": {
