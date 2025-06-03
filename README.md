@@ -2,11 +2,44 @@
 
 Transform your note-taking into progressive learning. Upload your markdown notes to Idealite where they're enhanced with AI-powered features like automatic tagging, flashcard generation, and intelligent organization.
 
-## How Idealite automates progressive summarization for you
+## How Idealite upgrades progressive summarization into progressive learning
 
--   Progressive learning is an idea based upon progressive summarization
--   In progressive summarization, you would return to your notes and keep distilling them until they are in atomic blocks.
--   idealite tries to automate this for you by turning your notes into flashcards which you review. As you review your flashcards, the platform will single out the things you don't quite understand and bring those specific parts to your attention so that you can hone in on them.
+-   **Turn distillation into action**: Instead of endlessly shrinking notes into smaller blocks, Idealite converts them into flashcards you can do right away.
+-   **Automates the busywork**: Hit save, and the app auto-tags your note, adds rich metadata, and generates flashcards
+-   **Surface real gaps**: Idealite tracks which cards you miss, back-links to the exact passages you struggle with, and puts only those in your queue.
+-   **Keeps you in the 'active' zone**: By skipping everything you've already mastered, every session is deliberate practice, not passive reading.
+-   Extra features
+    -   **Built-in metrics**
+    -   **Method-of-Loci 2.0**
+
+### Quick guide: adding front-matter that Idealite understands
+
+1. Put a YAML block at the very top of the note
+
+-   Begin and end with `---`, no blank lines before the opening fence.
+-   Use spaces (not tabs) for indention.
+
+2. Adding books
+
+-   Write each entry as "Title by Author" (or an object with title & author)
+
+```
+books:
+  - Atomic Habits by James Clear
+  - { title: "Peak", author: "Anders Ericsson" }   # object form also works
+```
+
+-   During upload Idealite hits OpenLibrary, fetches cover art & metadata, and links the book to your note.
+
+3. Adding URLs
+
+```
+urls:
+  - https://www.gatesnotes.com/Energy/My-new-favorite-battery-breakthrough
+  - https://x.com/someuser/status/987654321
+```
+
+-   Each URL is looked up (Twitter/X or generic open-graph) and saved as a resource, complete with title, description, preview image, and publication date when available.
 
 ## How to use
 
