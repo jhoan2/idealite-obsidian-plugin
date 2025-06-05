@@ -92,7 +92,7 @@ export default class IdealiteUploadPlugin extends Plugin {
 					return;
 				}
 
-				// Otherwise, upload the current note
+				// Otherwise, upload the current note (with folder check)
 				this.debug("Ribbon icon clicked");
 				const activeView =
 					this.app.workspace.getActiveViewOfType(MarkdownView);
@@ -111,7 +111,12 @@ export default class IdealiteUploadPlugin extends Plugin {
 						this.debug(
 							"Active file is markdown, attempting upload"
 						);
-						await this.uploadNote(currentFile);
+						// Check if file is in selected folder before uploading
+						if (this.isFileInSelectedFolder(currentFile)) {
+							await this.uploadNote(currentFile);
+						} else {
+							this.showFolderRestrictionNotice(currentFile);
+						}
 						return;
 					}
 					new Notice("No active markdown note to upload");
@@ -121,7 +126,7 @@ export default class IdealiteUploadPlugin extends Plugin {
 
 		// wait for the file index; then harvest once
 		this.app.workspace.onLayoutReady(() => {
-			if (this.settings.selectedFolder) this.initialHarvest();
+			if (this.isFolderSelected()) this.initialHarvest();
 		});
 
 		// Add command to upload current note
@@ -152,7 +157,7 @@ export default class IdealiteUploadPlugin extends Plugin {
 			name: "Upload selected folder to idealite",
 			callback: async () => {
 				this.debug("Upload selected folder command triggered");
-				if (!this.settings.selectedFolder) {
+				if (!this.isFolderSelected()) {
 					new Notice(
 						"No folder selected. Please select a folder in the plugin settings."
 					);
@@ -163,9 +168,7 @@ export default class IdealiteUploadPlugin extends Plugin {
 				this.debug(
 					`Looking for folder: ${this.settings.selectedFolder}`
 				);
-				const folder = this.app.vault.getFolderByPath(
-					this.settings.selectedFolder
-				);
+				const folder = this.getFolderFromSettings();
 				if (!folder) {
 					this.debug(
 						`Folder not found: ${this.settings.selectedFolder}`
@@ -342,9 +345,51 @@ export default class IdealiteUploadPlugin extends Plugin {
 		return files;
 	}
 
+	/**
+	 * Check if a folder is currently selected for syncing
+	 */
+	private isFolderSelected(): boolean {
+		return (
+			this.settings.selectedFolder !== null &&
+			this.settings.selectedFolder !== undefined
+		);
+	}
+
+	/**
+	 * Get the folder object from the current settings
+	 */
+	private getFolderFromSettings(): TFolder | null {
+		if (!this.isFolderSelected()) return null;
+
+		// Handle root folder (empty string)
+		if (this.settings.selectedFolder === "") {
+			return this.app.vault.getRoot();
+		}
+
+		return this.app.vault.getFolderByPath(this.settings.selectedFolder);
+	}
+
+	/**
+	 * Show a notice when user tries to upload a file outside the selected folder
+	 */
+	private showFolderRestrictionNotice(file: TFile) {
+		const folderName =
+			this.settings.selectedFolder === ""
+				? "root folder"
+				: this.settings.selectedFolder || "selected folder";
+		new Notice(
+			`Note "${file.name}" is not in the ${folderName}. Only notes in the selected folder can be uploaded.`
+		);
+	}
+
 	isFileInSelectedFolder(file: TFile): boolean {
-		// If no folder is selected, auto-upload is disabled for all files
-		if (!this.settings.selectedFolder) {
+		// If no folder is selected, no files should be uploaded
+		if (!this.isFolderSelected()) {
+			return false;
+		}
+
+		// Handle root folder case (empty string means root)
+		if (this.settings.selectedFolder === "") {
 			return false;
 		}
 
@@ -378,6 +423,12 @@ export default class IdealiteUploadPlugin extends Plugin {
 		if (!file) {
 			this.debug("No file in the current view");
 			new Notice("No file is currently open");
+			return;
+		}
+
+		// Check if file is in selected folder before uploading
+		if (!this.isFileInSelectedFolder(file)) {
+			this.showFolderRestrictionNotice(file);
 			return;
 		}
 
@@ -651,12 +702,18 @@ export default class IdealiteUploadPlugin extends Plugin {
 
 	/** One-shot scan of the selected folder and upload every unseen note */
 	async initialHarvest() {
-		const folderPath = this.settings.selectedFolder;
-		const files = folderPath
-			? this.getMarkdownFilesInFolder(
-					this.app.vault.getFolderByPath(folderPath)!
-			  )
-			: this.app.vault.getMarkdownFiles(); // vault root
+		if (!this.isFolderSelected()) {
+			this.debug("No folder selected, skipping initial harvest");
+			return;
+		}
+
+		const folder = this.getFolderFromSettings();
+		if (!folder) {
+			this.debug("Selected folder not found, skipping initial harvest");
+			return;
+		}
+
+		const files = this.getMarkdownFilesInFolder(folder);
 
 		let queued = 0;
 		for (const f of files) {
@@ -774,7 +831,9 @@ class IdealiteUploadSettingTab extends PluginSettingTab {
 		// Add folder selection
 		const folderSetting = new Setting(containerEl)
 			.setName("Selected Folder")
-			.setDesc("Choose the folder to sync with Idealite")
+			.setDesc(
+				"Choose the folder to sync with Idealite. Only notes in this folder will be uploaded."
+			)
 			.addText((text) => {
 				text.setPlaceholder("Example: folder/subfolder")
 					.setValue(this.plugin.settings.selectedFolder)
@@ -833,7 +892,9 @@ class IdealiteUploadSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName("Auto upload on save")
-			.setDesc("Automatically upload notes when they are saved")
+			.setDesc(
+				"Automatically upload notes when they are saved (only for notes in the selected folder)"
+			)
 			.addToggle((toggle) =>
 				toggle
 					.setValue(this.plugin.settings.autoUpload)
@@ -857,15 +918,25 @@ class IdealiteUploadSettingTab extends PluginSettingTab {
 					})
 			);
 
-		// Add info about the selected folder
-		if (this.plugin.settings.selectedFolder) {
-			containerEl.createEl("div", {
-				text: `The folder "${this.plugin.settings.selectedFolder}" is currently selected for Idealite sync.`,
-				cls: "setting-item-description",
-			});
+		// Add info about the selected folder with clearer messaging
+		if (
+			this.plugin.settings.selectedFolder !== null &&
+			this.plugin.settings.selectedFolder !== undefined
+		) {
+			if (this.plugin.settings.selectedFolder === "") {
+				containerEl.createEl("div", {
+					text: `The root folder is currently selected for Idealite sync. All notes in your vault can be uploaded.`,
+					cls: "setting-item-description",
+				});
+			} else {
+				containerEl.createEl("div", {
+					text: `The folder "${this.plugin.settings.selectedFolder}" is currently selected for Idealite sync. Only notes in this folder will be uploaded.`,
+					cls: "setting-item-description",
+				});
+			}
 		} else {
 			containerEl.createEl("div", {
-				text: "No folder selected. Auto-upload will be disabled.",
+				text: "No folder selected. Please select a folder to enable uploads.",
 				cls: "setting-item-description",
 			});
 		}
@@ -873,6 +944,12 @@ class IdealiteUploadSettingTab extends PluginSettingTab {
 
 	verifyFolderSelection() {
 		const folderPath = this.plugin.settings.selectedFolder;
+
+		// Handle case where no folder is selected
+		if (folderPath === null || folderPath === undefined) {
+			new Notice("No folder selected. Please select a folder first.");
+			return;
+		}
 
 		// Handle root folder case
 		if (folderPath === "") {
@@ -891,13 +968,6 @@ class IdealiteUploadSettingTab extends PluginSettingTab {
 			new Notice(
 				`Error: Folder "${folderPath}" not found. Please check the path.`
 			);
-
-			// Show all available folders to help the user
-			const allFolders = this.plugin.app.vault
-				.getAllLoadedFiles()
-				.filter((f) => f instanceof TFolder)
-				.map((f) => (f as TFolder).path);
-
 			return;
 		}
 
