@@ -71,3 +71,5 @@ urls:
 -   In the settings, paste in the API key in the API Token and select a folder by click on the Browse... button.
 -   ![Plugin-Settings](docs/images/plugin-settings.jpg)
 -   Your notes in the selected folder will be uploaded and processed into flashcards and notes on Idealite.
+
+To update the version run `npm version patch`
