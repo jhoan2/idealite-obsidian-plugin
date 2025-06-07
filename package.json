@@ -1,7 +1,7 @@
 {
 	"name": "idealite-sync",
 	"version": "1.0.2",
-	"description": "Transform your note-taking into progressive learning. Upload your markdown notes to Idealite where they're enhanced with AI-powered features like automatic tagging, flashcard generation, and intelligent organization.",
+	"description": "An AI assistant for life long learning.",
 	"main": "main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",
