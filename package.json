@@ -1,6 +1,6 @@
 {
 	"name": "idealite-sync",
-	"version": "1.0.2",
+	"version": "1.0.3",
 	"description": "An AI assistant for life long learning.",
 	"main": "main.js",
 	"scripts": {
