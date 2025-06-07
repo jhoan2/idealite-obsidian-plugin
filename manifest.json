@@ -1,6 +1,6 @@
 {
-	"id": "idealite-obsidian-plugin",
-	"name": "Idealite Obsidian Plugin",
+	"id": "idealite-sync",
+	"name": "Idealite Sync",
 	"version": "1.0.1",
 	"minAppVersion": "0.15.0",
 	"description": "Transform your note-taking into progressive learning. Upload your markdown notes to Idealite where they're enhanced with AI-powered features like automatic tagging, flashcard generation, and intelligent organization.",
