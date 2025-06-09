@@ -474,6 +474,14 @@ export default class IdealiteUploadPlugin extends Plugin {
 	}
 
 	async uploadNote(file: TFile) {
+		// Safety check: ensure file is in selected folder
+		if (!this.isFileInSelectedFolder(file)) {
+			this.debug(
+				`Skipping upload - file not in selected folder: ${file.path}`
+			);
+			return;
+		}
+
 		this.inFlight++;
 		this.refreshUi();
 
