@@ -58,7 +58,7 @@ const DEFAULT_SETTINGS: IdealiteUploadPluginSettings = {
 
 export default class IdealiteUploadPlugin extends Plugin {
 	settings: IdealiteUploadPluginSettings;
-	/** in-memory copy for O(1) look-ups */
+
 	uploaded: Record<string, UploadMetadata> = {};
 
 	/** UI elements */
