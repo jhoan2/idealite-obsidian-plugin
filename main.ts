@@ -58,7 +58,7 @@ const DEFAULT_SETTINGS: IdealiteUploadPluginSettings = {
 
 export default class IdealiteUploadPlugin extends Plugin {
 	settings: IdealiteUploadPluginSettings;
-	/** in-memory copy for O(1) look-ups */
+
 	uploaded: Record<string, UploadMetadata> = {};
 
 	/** UI elements */
@@ -68,6 +68,28 @@ export default class IdealiteUploadPlugin extends Plugin {
 	/** runtime counters */
 	private inFlight = 0;
 	private failed: { path: string; error: string }[] = [];
+
+	private checkRequiredSettings(): boolean {
+		// Check API token
+		if (!this.settings.apiToken || this.settings.apiToken.trim() === "") {
+			new Notice(
+				"Please configure your API token in plugin settings",
+				5000
+			);
+			return false;
+		}
+
+		// Check folder selection
+		if (!this.isFolderSelected()) {
+			new Notice(
+				"Please select a folder for sync in plugin settings",
+				5000
+			);
+			return false;
+		}
+
+		return true;
+	}
 
 	async onload() {
 		await this.loadSettings();
@@ -80,6 +102,11 @@ export default class IdealiteUploadPlugin extends Plugin {
 			"upload-cloud",
 			"Idealite Sync",
 			async () => {
+				// Check settings first
+				if (!this.checkRequiredSettings()) {
+					return;
+				}
+
 				// If there are errors, show error center
 				if (this.failed.length) {
 					this.showErrorCenter();
@@ -141,6 +168,12 @@ export default class IdealiteUploadPlugin extends Plugin {
 				if (checking) {
 					return true;
 				}
+
+				// Check settings before proceeding
+				if (!this.checkRequiredSettings()) {
+					return true;
+				}
+
 				this.debug(
 					`Upload command triggered for: ${
 						view.file?.path || "unknown"
@@ -157,10 +190,9 @@ export default class IdealiteUploadPlugin extends Plugin {
 			name: "Upload selected folder to idealite",
 			callback: async () => {
 				this.debug("Upload selected folder command triggered");
-				if (!this.isFolderSelected()) {
-					new Notice(
-						"No folder selected. Please select a folder in the plugin settings."
-					);
+
+				// Check settings first
+				if (!this.checkRequiredSettings()) {
 					return;
 				}
 
@@ -426,6 +458,11 @@ export default class IdealiteUploadPlugin extends Plugin {
 			return;
 		}
 
+		// Check settings
+		if (!this.checkRequiredSettings()) {
+			return;
+		}
+
 		// Check if file is in selected folder before uploading
 		if (!this.isFileInSelectedFolder(file)) {
 			this.showFolderRestrictionNotice(file);
@@ -437,6 +474,14 @@ export default class IdealiteUploadPlugin extends Plugin {
 	}
 
 	async uploadNote(file: TFile) {
+		// Safety check: ensure file is in selected folder
+		if (!this.isFileInSelectedFolder(file)) {
+			this.debug(
+				`Skipping upload - file not in selected folder: ${file.path}`
+			);
+			return;
+		}
+
 		this.inFlight++;
 		this.refreshUi();
 
@@ -702,8 +747,9 @@ export default class IdealiteUploadPlugin extends Plugin {
 
 	/** One-shot scan of the selected folder and upload every unseen note */
 	async initialHarvest() {
-		if (!this.isFolderSelected()) {
-			this.debug("No folder selected, skipping initial harvest");
+		// Check settings before proceeding
+		if (!this.checkRequiredSettings()) {
+			this.debug("Settings incomplete, skipping initial harvest");
 			return;
 		}
 
