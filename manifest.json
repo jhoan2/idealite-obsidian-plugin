@@ -1,7 +1,7 @@
 {
 	"id": "idealite-sync",
 	"name": "Idealite Sync",
-	"version": "1.0.3",
+	"version": "1.0.4",
 	"minAppVersion": "0.15.0",
 	"description": "An AI assistant for life long learning.",
 	"author": "John Hoang",
