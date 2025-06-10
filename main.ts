@@ -381,10 +381,8 @@ export default class IdealiteUploadPlugin extends Plugin {
 	 * Check if a folder is currently selected for syncing
 	 */
 	private isFolderSelected(): boolean {
-		return (
-			this.settings.selectedFolder !== null &&
-			this.settings.selectedFolder !== undefined
-		);
+		// true only if the user typed something
+		return !!this.settings.selectedFolder?.trim();
 	}
 
 	/**
