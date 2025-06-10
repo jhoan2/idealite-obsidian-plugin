@@ -72,4 +72,15 @@ urls:
 -   ![Plugin-Settings](docs/images/plugin-settings.jpg)
 -   Your notes in the selected folder will be uploaded and processed into flashcards and notes on Idealite.
 
-To update the version run `npm version patch`
+## Steps to update
+
+1. To update the version run `npm version patch`
+
+2. Merge pull request
+
+3. Create a tag and release
+
+```
+git tag -a 1.0.1 -m "1.0.1"
+git push origin 1.0.1
+```
